@@ -34,7 +34,7 @@ export default function Header() {
         {/* ===== Logo / Brand ===== */}
         <div className="flex items-center gap-3">
           <div className="text-lg font-extrabold text-ckNavy">
-            {BRAND_NAME}
+            {BRAND_KO}
           </div>
 
           <span className="hidden text-xs text-slate-500 md:inline">
