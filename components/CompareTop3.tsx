@@ -9,11 +9,14 @@ import { gaEvent } from "@/lib/ga";
 
 type Scenario = "student" | "family" | "gamer";
 
+/* =========================
+   Utils
+========================= */
+
 function money12(plan: Plan, includeHidden: boolean) {
   return includeHidden ? calc12moTotal(plan) : plan.promoPrice * 12;
 }
 
-/* ===== 시나리오별 점수 ===== */
 function scorePlan(
   p: Plan,
   plans: Plan[],
@@ -23,16 +26,15 @@ function scorePlan(
   const speeds = plans.map((x) => x.downloadMbps);
   const costs = plans.map((x) => money12(x, includeHidden));
 
-  const sMin = Math.min(...speeds);
-  const sMax = Math.max(...speeds);
-  const cMin = Math.min(...costs);
-  const cMax = Math.max(...costs);
-
   const norm = (x: number, min: number, max: number) =>
     max === min ? 0.5 : (x - min) / (max - min);
 
-  const s = norm(p.downloadMbps, sMin, sMax);
-  const c = norm(money12(p, includeHidden), cMin, cMax);
+  const s = norm(p.downloadMbps, Math.min(...speeds), Math.max(...speeds));
+  const c = norm(
+    money12(p, includeHidden),
+    Math.min(...costs),
+    Math.max(...costs)
+  );
 
   const w =
     scenario === "student"
@@ -44,7 +46,6 @@ function scorePlan(
   return (1 - c) * w.cost + s * w.speed;
 }
 
-/* ===== TOP3 선택 ===== */
 function pickTop3(plans: Plan[], includeHidden: boolean, scenario: Scenario) {
   const list = [...plans];
 
@@ -70,21 +71,24 @@ function pickTop3(plans: Plan[], includeHidden: boolean, scenario: Scenario) {
   };
 
   return [
-    { label: "가성비 TOP", plan: pick(byCheap) },
+    { label: "Mejor precio", plan: pick(byCheap) },
     {
       label:
         scenario === "student"
-          ? "유학생 추천"
+          ? "Estudiantes"
           : scenario === "family"
-          ? "가족 추천"
-          : "게이머 추천",
+          ? "Familias"
+          : "Gamers",
       plan: pick(byScenario),
     },
-    { label: "최고속 TOP", plan: pick(byFast) },
+    { label: "Más rápido", plan: pick(byFast) },
   ];
 }
 
-/* ===== 메인 컴포넌트 ===== */
+/* =========================
+   Component
+========================= */
+
 export default function CompareTop3({
   plans,
   includeHidden,
@@ -106,39 +110,60 @@ export default function CompareTop3({
 
   return (
     <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-      {/* ===== 헤더 ===== */}
+      {/* Header */}
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-lg font-extrabold text-ckNavy">
-            이 지역 추천 TOP3
+            TOP 3 planes recomendados
           </h2>
           <p className="text-sm text-slate-600">
-            {includeHidden ? "숨은 비용 포함(12개월)" : "프로모 기준(12개월)"}
+            {includeHidden
+              ? "Costos ocultos incluidos (12 meses)"
+              : "Precio promocional (12 meses)"}
             {zip && ` · ZIP ${zip}`}
           </p>
         </div>
 
         <div className="flex gap-2">
-          {(["student", "family", "gamer"] as Scenario[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setScenario(s)}
-              className={
-                "rounded-2xl px-4 py-2 text-sm font-extrabold transition " +
-                (scenario === s
-                  ? "bg-ckNavy text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200")
-              }
-            >
-              {s === "student" && "🎓 유학생"}
-              {s === "family" && "👨‍👩‍👧‍👦 가족"}
-              {s === "gamer" && "🎮 게이머"}
-            </button>
-          ))}
+          <button
+            onClick={() => setScenario("student")}
+            className={
+              "rounded-2xl px-4 py-2 text-sm font-extrabold transition " +
+              (scenario === "student"
+                ? "bg-ckNavy text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200")
+            }
+          >
+            🎓 Estudiantes
+          </button>
+
+          <button
+            onClick={() => setScenario("family")}
+            className={
+              "rounded-2xl px-4 py-2 text-sm font-extrabold transition " +
+              (scenario === "family"
+                ? "bg-ckNavy text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200")
+            }
+          >
+            👨‍👩‍👧‍👦 Familias
+          </button>
+
+          <button
+            onClick={() => setScenario("gamer")}
+            className={
+              "rounded-2xl px-4 py-2 text-sm font-extrabold transition " +
+              (scenario === "gamer"
+                ? "bg-ckNavy text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200")
+            }
+          >
+            🎮 Gamers
+          </button>
         </div>
       </div>
 
-      {/* ===== 카드 ===== */}
+      {/* Cards */}
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {top3.map(({ label, plan }) => {
           const c = carriers.find((x) => x.id === plan.carrierId);
@@ -149,7 +174,7 @@ export default function CompareTop3({
               key={plan.id}
               className="relative rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm"
             >
-              {/* ✅ 브랜드 컬러 바 */}
+              {/* Brand color bar */}
               {c && (
                 <div
                   className={`absolute left-0 top-0 h-full w-1 rounded-l-2xl ${
@@ -172,19 +197,19 @@ export default function CompareTop3({
 
                 <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
                   <div className="rounded-xl bg-slate-50 p-3">
-                    <div className="text-slate-600">속도</div>
+                    <div className="text-slate-600">Velocidad</div>
                     <div className="font-extrabold">
-                      {plan.downloadMbps}M
+                      {plan.downloadMbps} Mbps
                     </div>
                   </div>
                   <div className="rounded-xl bg-slate-50 p-3">
-                    <div className="text-slate-600">월</div>
+                    <div className="text-slate-600">Mensual</div>
                     <div className="font-extrabold">
                       ${plan.promoPrice.toFixed(2)}
                     </div>
                   </div>
                   <div className="rounded-xl bg-slate-50 p-3">
-                    <div className="text-slate-600">12개월</div>
+                    <div className="text-slate-600">12 meses</div>
                     <div className="font-extrabold">
                       ${total12.toFixed(0)}
                     </div>
@@ -202,7 +227,7 @@ export default function CompareTop3({
                   }
                   className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-ckOrange px-4 py-3 text-sm font-extrabold text-ckNavy"
                 >
-                  📞 이 플랜으로 상담 ({SUPPORT_PHONE_DISPLAY})
+                  📞 Llamar para este plan ({SUPPORT_PHONE_DISPLAY})
                 </a>
               </div>
             </div>

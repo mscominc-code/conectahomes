@@ -4,14 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { gaEvent } from "@/lib/ga";
 
-
-
 export default function HomePage() {
   const router = useRouter();
   const [zip, setZip] = useState("");
   const zipOk = /^\d{5}$/.test(zip);
   const [locLoading, setLocLoading] = useState(false);
-
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -19,82 +16,81 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4 pt-14 pb-10">
         <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12">
           <h1 className="text-3xl font-extrabold leading-tight text-ckNavy md:text-4xl">
-            미국 인터넷·모바일,
+            Internet y móvil en Estados Unidos,
             <br />
             <span className="text-ckOrange">
-              한국어로 쉽게 비교
+              fácil y en español
             </span>
-            하고 바로 가입
           </h1>
 
           <p className="mt-4 max-w-2xl text-base text-slate-600 md:text-lg">
-            Zip Code만 입력하면 우리 동네에서 가능한
-            인터넷·모바일 요금제를 한눈에 비교하고,
-            한국어 상담으로 바로 가입할 수 있어요.
+            Ingresa tu código postal y compara los mejores planes de
+            internet y móvil disponibles en tu área.
+            Atención 100% en español.
           </p>
 
           {/* ZIP Input Card */}
           <div className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-           <div className="flex flex-col gap-3 sm:flex-row">
-  <input
-    value={zip}
-    onChange={(e) => setZip(e.target.value.trim())}
-    inputMode="numeric"
-    maxLength={5}
-    placeholder="Zip Code 5자리를 입력하세요"
-    className="
-      flex-1
-      rounded-2xl
-      border
-      border-slate-300
-      bg-white
-      px-5
-      py-4
-      text-base
-      text-slate-900
-      placeholder:text-slate-400
-      outline-none
-      focus:border-slate-900
-      focus:ring-1
-      focus:ring-slate-900
-    "
-  />
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                value={zip}
+                onChange={(e) => setZip(e.target.value.trim())}
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="Código postal (5 dígitos)"
+                className="
+                  flex-1
+                  rounded-2xl
+                  border
+                  border-slate-300
+                  bg-white
+                  px-5
+                  py-4
+                  text-base
+                  text-slate-900
+                  placeholder:text-slate-400
+                  outline-none
+                  focus:border-slate-900
+                  focus:ring-1
+                  focus:ring-slate-900
+                "
+              />
 
-  <button
-    disabled={!zipOk || locLoading}
-    onClick={async () => {
-      try {
-        setLocLoading(true);
-        localStorage.setItem("ck_zip", zip);
-        window.dispatchEvent(new Event("ck_zip_updated"));
-        router.push(`/compare?zip=${zip}`);
-      } finally {
-        setLocLoading(false);
-      }
-    }}
-    className="
-      shrink-0
-      min-w-[140px]
-      rounded-2xl
-      bg-slate-900
-      px-6
-      py-4
-      text-base
-      font-extrabold
-      text-white
-      shadow-md
-      transition
-      hover:bg-slate-800
-      disabled:opacity-40
-    "
-  >
-    {locLoading ? "조회중..." : "TOP3 보기"}
-  </button>
-</div>
-
+              <button
+                disabled={!zipOk || locLoading}
+                onClick={async () => {
+                  try {
+                    setLocLoading(true);
+                    localStorage.setItem("ck_zip", zip);
+                    window.dispatchEvent(new Event("ck_zip_updated"));
+                    gaEvent("zip_submit", { zip, site: "conectahomes" });
+                    router.push(`/compare?zip=${zip}`);
+                  } finally {
+                    setLocLoading(false);
+                  }
+                }}
+                className="
+                  shrink-0
+                  min-w-[160px]
+                  rounded-2xl
+                  bg-slate-900
+                  px-6
+                  py-4
+                  text-base
+                  font-extrabold
+                  text-white
+                  shadow-md
+                  transition
+                  hover:bg-slate-800
+                  disabled:opacity-40
+                "
+              >
+                {locLoading ? "Buscando..." : "Ver TOP 3 planes"}
+              </button>
+            </div>
 
             <p className="mt-3 text-sm text-slate-500">
-              ✔ 숨은 비용까지 고려한 추천 · ✔ 한국어 상담 가능
+              ✔ Incluye costos ocultos · ✔ Atención en español
             </p>
           </div>
         </div>
@@ -105,16 +101,16 @@ export default function HomePage() {
         <div className="grid gap-4 md:grid-cols-3">
           {[
             {
-              title: "숨은 비용까지 계산",
-              desc: "프로모션 이후 요금, 장비비, 설치비까지 모두 고려해 추천해요.",
+              title: "Costos reales",
+              desc: "Consideramos promociones, cargos por equipo e instalación.",
             },
             {
-              title: "유학생·가족·게이머 맞춤",
-              desc: "사용 목적에 따라 가장 유리한 요금제를 자동으로 골라드려요.",
+              title: "Planes según tu necesidad",
+              desc: "Estudiantes, familias y gamers reciben la mejor opción.",
             },
             {
-              title: "한국어 상담 & 가입",
-              desc: "복잡한 계약 조건, 한국어로 설명 듣고 바로 가입하세요.",
+              title: "Asesoría en español",
+              desc: "Te explicamos todo y contratamos contigo en una llamada.",
             },
           ].map((v, i) => (
             <div
@@ -131,10 +127,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* ===== Footer ===== */}
-     
     </main>
   );
 }
-

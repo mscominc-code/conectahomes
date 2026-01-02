@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image"; // ✅ 이 줄 추가
 import CompareLocationBanner from "@/components/CompareLocationBanner";
 import { carriers, plans, type Plan } from "@/lib/plans";
 import { calc12moTotal } from "@/lib/recommend";
@@ -10,53 +9,49 @@ import { SUPPORT_PHONE_DISPLAY, SUPPORT_PHONE_TEL } from "@/lib/utils";
 import { gaEvent } from "@/lib/ga";
 
 /* =========================
-   유틸
+   Utilidades
 ========================= */
 
 function money12(plan: Plan, includeHidden: boolean) {
   return includeHidden ? calc12moTotal(plan) : plan.promoPrice * 12;
 }
+
 function fmtPrice(n: number) {
   return n % 1 === 0 ? n.toFixed(0) : n.toFixed(2);
 }
 
 function getPlanRoles(list: Plan[], includeHidden: boolean) {
-  if (list.length === 0) return {};
+  if (!list.length) return {};
 
-  const bySpeed = [...list].sort(
-    (a, b) => a.downloadMbps - b.downloadMbps
-  );
-
+  const bySpeed = [...list].sort((a, b) => a.downloadMbps - b.downloadMbps);
   const byCost = [...list].sort(
     (a, b) => money12(a, includeHidden) - money12(b, includeHidden)
   );
 
   return {
-    cheapId: byCost[0].id, // 가성비
-    fastId: bySpeed[bySpeed.length - 1].id, // 최고속
-    recommendId: bySpeed[Math.floor(bySpeed.length / 2)].id, // 추천
+    cheapId: byCost[0].id,                          // Mejor precio
+    fastId: bySpeed[bySpeed.length - 1].id,         // Más rápido
+    recommendId: bySpeed[Math.floor(bySpeed.length / 2)].id, // Recomendado
   };
 }
 
-function PlanBadge({ label }: { label: "가성비" | "최고속" | "추천" }) {
+function PlanBadge({ label }: { label: "Mejor precio" | "Más rápido" | "Recomendado" }) {
   const style =
-    label === "가성비"
+    label === "Mejor precio"
       ? "bg-emerald-50 text-emerald-700"
-      : label === "최고속"
+      : label === "Más rápido"
       ? "bg-blue-50 text-blue-700"
       : "bg-purple-50 text-purple-700";
 
   return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${style}`}
-    >
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${style}`}>
       {label}
     </span>
   );
 }
 
 /* =========================
-   메인 컴포넌트
+   Componente principal
 ========================= */
 
 export default function CompareClient() {
@@ -65,12 +60,11 @@ export default function CompareClient() {
 
   const [includeHidden, setIncludeHidden] = useState(false);
 
-  // 통신사별로 묶기
   const grouped = useMemo(() => {
     return carriers.map((carrier) => {
       const list = plans
         .filter((p) => p.carrierId === carrier.id)
-        .sort((a, b) => a.downloadMbps - b.downloadMbps); // 속도 낮 → 높
+        .sort((a, b) => a.downloadMbps - b.downloadMbps);
 
       return {
         carrier,
@@ -82,20 +76,20 @@ export default function CompareClient() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      {/* ZIP 배너 */}
+      {/* Banner ZIP */}
       <CompareLocationBanner />
 
-      {/* 옵션 */}
+      {/* Opciones */}
       <section className="mt-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-extrabold text-ckNavy">
-              요금제 비교
+              Comparar planes
             </h1>
             <p className="mt-1 text-sm text-slate-600">
               {zip
-                ? `ZIP ${zip} 기준 추천 요금제`
-                : "ZIP을 입력하면 더 정확해져요"}
+                ? `Planes disponibles según el código postal ${zip}`
+                : "Ingresa tu código postal para resultados más precisos"}
             </p>
           </div>
 
@@ -108,38 +102,37 @@ export default function CompareClient() {
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200")
             }
           >
-            {includeHidden ? "✅ 숨은 비용 포함" : "숨은 비용 포함"}
+            {includeHidden ? "✅ Costos reales incluidos" : "Incluir costos reales"}
           </button>
         </div>
       </section>
 
-      {/* ===== 통신사별 플랜 ===== */}
+      {/* ===== Planes por proveedor ===== */}
       <section className="mt-6 space-y-6">
         {grouped.map(({ carrier, list, roles }) => (
           <div
             key={carrier.id}
-             className={`rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm`}
+            className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm"
           >
+            {/* Encabezado proveedor */}
             <div className="flex items-center gap-3">
-  <Image
-    src={`/logos/${carrier.id}.png`}
-    alt={carrier.name}
-    width={120}
-    height={48}
-    className="h-10 w-auto object-contain"
-    priority
-  />
+              <img
+                src={`/logos/${carrier.id}.png`}
+                alt={carrier.name}
+                className="h-10 w-auto object-contain"
+              />
+              <span className="text-lg font-extrabold text-ckNavy">
+                {carrier.name}
+              </span>
+            </div>
 
-  <span className="text-lg font-extrabold text-ckNavy">
-    {carrier.nameKo}
-  </span>
-</div>
-
+            {/* Mensaje de venta */}
             <p className="mt-1 text-sm text-slate-600">
-             {carrier.id === "att" && "업로드 속도가 빠른 광랜(Fiber) 중심 요금제"}
-             {carrier.id === "spectrum" && "미국 전역 가용성이 높은 케이블 인터넷"}
-              {carrier.id === "frontier" && "가성비 좋은 파이버 요금제"}
+              {carrier.id === "att" && "Internet de fibra con velocidades simétricas"}
+              {carrier.id === "spectrum" && "Cobertura amplia en todo Estados Unidos"}
+              {carrier.id === "frontier" && "Planes de fibra con excelente precio"}
             </p>
+
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               {list.map((p) => {
                 const total12 = money12(p, includeHidden);
@@ -149,46 +142,40 @@ export default function CompareClient() {
                     key={p.id}
                     className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm"
                   >
-                    {/* 제목 + 뱃지 */}
+                    {/* Título + badge */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="text-lg font-extrabold text-ckNavy">
                         {p.name}
                       </div>
 
-                      {p.id === roles.cheapId && (
-                        <PlanBadge label="가성비" />
-                      )}
-                      {p.id === roles.fastId && (
-                        <PlanBadge label="최고속" />
-                      )}
-                      {p.id === roles.recommendId && (
-                        <PlanBadge label="추천" />
-                      )}
+                      {p.id === roles.cheapId && <PlanBadge label="Mejor precio" />}
+                      {p.id === roles.fastId && <PlanBadge label="Más rápido" />}
+                      {p.id === roles.recommendId && <PlanBadge label="Recomendado" />}
                     </div>
 
                     <p className="mt-1 text-sm text-slate-600">
-                      다운로드 {p.downloadMbps}Mbps
+                      Velocidad: {p.downloadMbps} Mbps
                     </p>
 
                     <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
                       <div className="rounded-xl bg-slate-50 p-3">
-                        <div className="text-slate-500">월</div>
+                        <div className="text-slate-500">Mensual</div>
                         <div className="font-extrabold">
                           ${fmtPrice(p.promoPrice)}
                         </div>
                       </div>
                       <div className="rounded-xl bg-slate-50 p-3">
-                        <div className="text-slate-500">12개월</div>
+                        <div className="text-slate-500">12 meses</div>
                         <div className="font-extrabold">
                           ${total12.toFixed(0)}
                         </div>
                       </div>
                       <div className="rounded-xl bg-slate-50 p-3">
-                        <div className="text-slate-500">약정</div>
+                        <div className="text-slate-500">Contrato</div>
                         <div className="font-extrabold">
                           {p.contractMonths === 0
-                            ? "무약정"
-                            : `${p.contractMonths}개월`}
+                            ? "Sin contrato"
+                            : `${p.contractMonths} meses`}
                         </div>
                       </div>
                     </div>
@@ -201,11 +188,12 @@ export default function CompareClient() {
                           carrier: carrier.name,
                           plan_id: p.id,
                           zip,
+                          site: "conectahomes",
                         })
                       }
                       className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-ckOrange px-4 py-3 text-sm font-extrabold text-ckNavy"
                     >
-                      📞 이 플랜으로 상담 ({SUPPORT_PHONE_DISPLAY})
+                      📞 Llamar para contratar ({SUPPORT_PHONE_DISPLAY})
                     </a>
                   </div>
                 );
