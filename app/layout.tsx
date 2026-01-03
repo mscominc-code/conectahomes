@@ -6,7 +6,7 @@ import ClientStickyCallBar from "@/components/ClientStickyCallBar";
 
 export const metadata: Metadata = {
   title: {
-    default: "ConectaHomes | Internet y Cable en Estados Unidos",
+    default: "ConectaHomes | Internet y Servicios para el Hogar en EE.UU.",
     template: "%s | ConectaHomes",
   },
   description:
@@ -20,11 +20,17 @@ export const metadata: Metadata = {
     "internet para familias",
     "hablar en español internet",
   ],
+  metadataBase: new URL("https://conectahomes.com"),
+  alternates: {
+    canonical: "https://conectahomes.com",
+    languages: {
+      es: "https://conectahomes.com",
+    },
+  },
   icons: {
     icon: "/icon.png",
     apple: "/apple-icon.png",
   },
-  metadataBase: new URL("https://conectahomes.com"),
   openGraph: {
     title: "ConectaHomes | Internet y Cable en EE.UU.",
     description:
@@ -43,6 +49,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
+      <head>
+        {/* ===== Spanish SEO: Organization + Phone (JSON-LD) ===== */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "ConectaHomes",
+              url: "https://conectahomes.com",
+              telephone: "+1-800-220-5054",
+              contactPoint: {
+                "@type": "ContactPoint",
+                telephone: "+1-800-220-5054",
+                contactType: "customer service",
+                availableLanguage: ["Spanish"],
+                areaServed: "US",
+              },
+            }),
+          }}
+        />
+      </head>
+
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <Header />
 
