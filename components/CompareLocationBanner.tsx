@@ -136,7 +136,7 @@ export default function CompareLocationBanner() {
             <button
               onClick={applyZip}
               disabled={!zipOk}
-              className="rounded-2xl bg-ckNavy px-5 py-3 text-sm font-extrabold text-white disabled:opacity-40"
+              className="rounded-2xl bg-ckNavy px-5 py-3 text-sm font-extrabold text-gray-500 disabled:opacity-40"
             >
               Aplicar
             </button>
