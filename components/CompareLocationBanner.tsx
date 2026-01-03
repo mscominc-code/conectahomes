@@ -166,7 +166,7 @@ export default function CompareLocationBanner() {
             md:w-auto
           "
         >
-          <span className="font-extrabold text-white">
+          <span className="font-extrabold text-gray-500">
             📞 Llama ahora ({SUPPORT_PHONE_DISPLAY})
           </span>
         </a>
